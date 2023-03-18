@@ -1,0 +1,13 @@
+.header-container {
+    background-color: tomato;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+
+    .logo {
+        width: 6rem;
+        border-radius: 50%;
+    }
+}
