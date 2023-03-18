@@ -6,7 +6,7 @@
   width: 100%;
   padding: 1rem 2rem;
   color: $primary;
-  z-index: -2;
+  border-radius: 0 0 0.6rem 0.6rem;
 
   @include mobile() {
     padding: 1rem 1rem 5rem 1rem;
@@ -23,11 +23,11 @@
     }
 
     .icons {
-        display: flex;
+      display: flex;
 
-        .second {
-            margin-left: 1rem;
-        }
+      .second {
+        margin-left: 1rem;
+      }
     }
   }
 
@@ -35,7 +35,7 @@
     margin-top: 1rem;
 
     .welcome {
-        font-weight: 300;
+      font-weight: 300;
     }
   }
 }
