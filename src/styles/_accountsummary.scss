@@ -1,0 +1,9 @@
+@import "mixins";
+@import "./variables.scss";
+
+.account-summary-container {
+  @include mobile() {
+    margin-top: -4rem;
+    z-index: 99;
+  }
+}

@@ -6,9 +6,10 @@
   width: 100%;
   padding: 1rem 2rem;
   color: $primary;
+  z-index: -2;
 
   @include mobile() {
-    padding: 1rem;
+    padding: 1rem 1rem 5rem 1rem;
   }
 
   .top {
