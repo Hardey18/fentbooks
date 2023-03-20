@@ -1,11 +1,9 @@
 import React from "react";
-import { MdAccountBalanceWallet } from "react-icons/md"
 import { IoMdPricetags } from "react-icons/io"
 import { CgProfile } from "react-icons/cg"
 import { GrTransaction } from "react-icons/gr"
 import { TbFileInvoice } from "react-icons/tb"
 import "../styles/_dashboard.scss";
-import Cards from "./Cards";
 import DashboardCard from "./DashboardCard";
 
 function Dashboard() {
