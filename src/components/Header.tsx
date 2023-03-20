@@ -19,7 +19,7 @@ function Header() {
       </div>
       <div className="user">
         <h4 className='welcome'>Welcome back,</h4>
-        <h2>Francis</h2>
+        <h2>ABC Company Limited</h2>
       </div>
     </div>
   )
