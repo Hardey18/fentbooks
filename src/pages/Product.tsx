@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import { Dialog, Menu, Transition } from "@headlessui/react";
 import {
   Bars3CenterLeftIcon,
@@ -23,23 +23,27 @@ import {
   MagnifyingGlassIcon,
   PlusIcon,
 } from "@heroicons/react/20/solid";
-import { Select, Skeleton, Spin } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
+import { Button, Divider, Input, Select, Skeleton, Space, Spin } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
 import { AuthService } from "../services/api/auth";
 import { ProductService } from "../services/api/product";
 import { inputValidationError, numberWithCommas } from "../utils";
 import { CategoryService } from "../services/api/categories";
+import { toast, Toaster } from "react-hot-toast";
+import type { InputRef } from "antd";
+import moment from "moment";
 
 const navigation = [
   { name: "Home", href: "/dashboard", icon: HomeIcon, current: false },
+  { name: "Income", href: "/invoice", icon: ScaleIcon, current: false },
   {
-    name: "Transactions",
+    name: "Expenses",
     href: "/transactions",
     icon: ClockIcon,
     current: false,
   },
-  { name: "Invoice", href: "/invoice", icon: ScaleIcon, current: false },
   { name: "Products", href: "/products", icon: CreditCardIcon, current: true },
   {
     name: "Categories",
@@ -54,40 +58,12 @@ const navigation = [
     current: false,
   },
 ];
-// const secondaryNavigation = [
-//   { name: 'Settings', href: '#', icon: CogIcon },
-//   { name: 'Help', href: '#', icon: QuestionMarkCircleIcon },
-//   { name: 'Privacy', href: '#', icon: ShieldCheckIcon },
-// ]
-const cards = [
-  { name: "Account balance", href: "#", icon: ScaleIcon, amount: "$30,659.45" },
-  { name: "Total Income", href: "#", icon: ScaleIcon, amount: "$30,659.45" },
-  { name: "Total Expenses", href: "#", icon: ScaleIcon, amount: "$30,659.45" },
-  { name: "Net Worth", href: "#", icon: ScaleIcon, amount: "$30,659.45" },
-  // More items...
-];
-const transactions = [
-  {
-    id: 1,
-    name: "Payment to Molly Sanders",
-    href: "#",
-    amount: "$20,000",
-    currency: "USD",
-    status: "success",
-    date: "July 11, 2020",
-    datetime: "2020-07-11",
-  },
-  // More transactions...
-];
-const statusStyles: any = {
-  success: "bg-green-100 text-green-800",
-  processing: "bg-yellow-100 text-yellow-800",
-  failed: "bg-gray-100 text-gray-800",
-};
 
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
 }
+
+let index = 0;
 
 export default function Product() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -95,8 +71,52 @@ export default function Product() {
   const [categoryId, setCategoryId]: any = useState();
   const [formData, setFormData]: any = useState({});
   const navigate = useNavigate();
+  const [items, setItems] = useState(["jack", "lucy"]);
+  const [name, setName] = useState("");
+  const inputRef = useRef<InputRef>(null);
 
-  console.log("CATEGORY ID", categoryId);
+  const onNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setName(event.target.value);
+  };
+
+  // const addItem = (
+  //   e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>
+  // ) => {
+  //   e.preventDefault();
+  //   setItems([...items, name || `New item ${index++}`]);
+  //   setName("");
+  //   setTimeout(() => {
+  //     inputRef.current?.focus();
+  //   }, 0);
+  // };
+
+  const [showCategory, setShowCategory] = useState(false);
+  const handleShowCategory = (event: any) => {
+    setShowCategory((current) => !current);
+  };
+
+  const { mutateAsync: createCategory, isLoading: createCategoryLoading } =
+    useMutation((payload) => CategoryService.createCategory(payload));
+
+  const newCategoryData: any = {
+    category: name,
+  };
+
+
+
+  const handleCategoryUpdate = (event: any) => {
+    event.preventDefault();
+    createCategory(newCategoryData).then((res: any) => {
+      console.log("RESPONSE", res);
+      if (res?.data?.status === "success") {
+        toast.success("Category created successfully");
+        setName("");
+        setShowCategory((current) => !current);
+      } else {
+        toast.error(res?.response?.data?.message);
+      }
+    });
+  };
 
   const updateFormData = (e: any) => {
     setFormData({
@@ -128,7 +148,7 @@ export default function Product() {
     isFetching: productIsFetching,
   }: any = useQuery(["product-data"], () => ProductService.getProducts(), {
     keepPreviousData: true,
-    refetchInterval: 1000,
+    refetchInterval: 2000,
     refetchIntervalInBackground: true,
   });
 
@@ -140,7 +160,7 @@ export default function Product() {
     isFetching: categoryIsFetching,
   }: any = useQuery(["category-data"], () => CategoryService.getCategories(), {
     keepPreviousData: true,
-    refetchInterval: 1000,
+    refetchInterval: 2000,
     refetchIntervalInBackground: true,
   });
 
@@ -152,41 +172,18 @@ export default function Product() {
     createProduct(formData).then((res: any) => {
       if (res?.data?.status === "success") {
         setOpen(false);
+        toast.success("Product created successfully!");
+      } else {
+        toast.error(res?.response?.data?.message);
       }
     });
   };
 
-  console.log("CATEGORY DATA", categoryData);
-
-  const people = [
-    {
-      name: "Lindsay Walton",
-      title: "Front-end Developer",
-      email: "lindsay.walton@example.com",
-      role: "Member",
-    },
-    {
-      name: "Lindsay Walton",
-      title: "Front-end Developer",
-      email: "lindsay.walton@example.com",
-      role: "Member",
-    },
-    {
-      name: "Lindsay Walton",
-      title: "Front-end Developer",
-      email: "lindsay.walton@example.com",
-      role: "Member",
-    },
-    {
-      name: "Lindsay Walton",
-      title: "Front-end Developer",
-      email: "lindsay.walton@example.com",
-      role: "Member",
-    },
-  ];
-
   return (
     <>
+      <div>
+        <Toaster position="top-right" reverseOrder={false} />
+      </div>
       <div className="min-h-full">
         <Transition.Root show={sidebarOpen} as={Fragment}>
           <Dialog
@@ -216,7 +213,7 @@ export default function Product() {
                 leaveFrom="translate-x-0"
                 leaveTo="-translate-x-full"
               >
-                <Dialog.Panel className="relative flex w-full max-w-xs flex-1 flex-col bg-cyan-700 pt-5 pb-4">
+                <Dialog.Panel className="relative flex w-full max-w-xs flex-1 flex-col bg-green-700 pt-5 pb-4">
                   <Transition.Child
                     as={Fragment}
                     enter="ease-in-out duration-300"
@@ -242,13 +239,13 @@ export default function Product() {
                   </Transition.Child>
                   <div className="flex flex-shrink-0 items-center px-4">
                     <img
-                      className="h-8 w-auto"
-                      src="https://tailwindui.com/img/logos/mark.svg?color=cyan&shade=300"
+                      className="h-12 w-auto rounded-full"
+                      src="logo.png"
                       alt="Easywire logo"
                     />
                   </div>
                   <nav
-                    className="mt-5 h-full flex-shrink-0 divide-y divide-cyan-800 overflow-y-auto"
+                    className="mt-5 h-full flex-shrink-0 divide-y divide-green-800 overflow-y-auto"
                     aria-label="Sidebar"
                   >
                     <div className="space-y-1 px-2">
@@ -258,14 +255,14 @@ export default function Product() {
                           to={item.href}
                           className={classNames(
                             item.current
-                              ? "bg-cyan-800 text-white"
-                              : "text-cyan-100 hover:bg-cyan-600 hover:text-white",
+                              ? "bg-green-800 text-white"
+                              : "text-green-100 hover:bg-green-600 hover:text-white",
                             "group flex items-center rounded-md px-2 py-2 text-base font-medium"
                           )}
                           aria-current={item.current ? "page" : undefined}
                         >
                           <item.icon
-                            className="mr-4 h-6 w-6 flex-shrink-0 text-cyan-200"
+                            className="mr-4 h-6 w-6 flex-shrink-0 text-green-200"
                             aria-hidden="true"
                           />
                           {item.name}
@@ -285,16 +282,16 @@ export default function Product() {
         {/* Static sidebar for desktop */}
         <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
           {/* Sidebar component, swap this element with another sidebar if you like */}
-          <div className="flex flex-grow flex-col overflow-y-auto bg-cyan-700 pt-5 pb-4">
+          <div className="flex flex-grow flex-col overflow-y-auto bg-green-700 pt-5 pb-4">
             <div className="flex flex-shrink-0 items-center px-4">
               <img
-                className="h-8 w-auto"
-                src="https://tailwindui.com/img/logos/mark.svg?color=cyan&shade=300"
+                className="h-12 w-auto rounded-full"
+                src="logo.png"
                 alt="Easywire logo"
               />
             </div>
             <nav
-              className="mt-5 flex flex-1 flex-col divide-y divide-cyan-800 overflow-y-auto"
+              className="mt-5 flex flex-1 flex-col divide-y divide-green-800 overflow-y-auto"
               aria-label="Sidebar"
             >
               <div className="space-y-1 px-2">
@@ -304,14 +301,14 @@ export default function Product() {
                     href={item.href}
                     className={classNames(
                       item.current
-                        ? "bg-cyan-800 text-white"
-                        : "text-cyan-100 hover:bg-cyan-600 hover:text-white",
+                        ? "bg-green-800 text-white"
+                        : "text-green-100 hover:bg-green-600 hover:text-white",
                       "group flex items-center rounded-md px-2 py-2 text-sm font-medium leading-6"
                     )}
                     aria-current={item.current ? "page" : undefined}
                   >
                     <item.icon
-                      className="mr-4 h-6 w-6 flex-shrink-0 text-cyan-200"
+                      className="mr-4 h-6 w-6 flex-shrink-0 text-green-200"
                       aria-hidden="true"
                     />
                     {item.name}
@@ -326,7 +323,7 @@ export default function Product() {
           <div className="flex h-16 flex-shrink-0 border-b border-gray-200 bg-white lg:border-none">
             <button
               type="button"
-              className="border-r border-gray-200 px-4 text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-500 lg:hidden"
+              className="border-r border-gray-200 px-4 text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500 lg:hidden"
               onClick={() => setSidebarOpen(true)}
             >
               <span className="sr-only">Open sidebar</span>
@@ -342,7 +339,7 @@ export default function Product() {
               <div className="ml-4 flex items-center md:ml-6">
                 <button
                   type="button"
-                  className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
+                  className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                 >
                   <span className="sr-only">View notifications</span>
                   <BellIcon className="h-6 w-6" aria-hidden="true" />
@@ -351,7 +348,7 @@ export default function Product() {
                 {/* Profile dropdown */}
                 <Menu as="div" className="relative ml-3">
                   <div>
-                    <Menu.Button className="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 lg:rounded-md lg:p-2 lg:hover:bg-gray-50">
+                    <Menu.Button className="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 lg:rounded-md lg:p-2 lg:hover:bg-gray-50">
                       {data?.data?.data?.profilePhoto ? (
                         <img
                           className="h-8 w-8 rounded-full"
@@ -433,7 +430,7 @@ export default function Product() {
                   <button
                     type="button"
                     onClick={() => setOpen(true)}
-                    className="block rounded-md bg-cyan-600 py-2 px-3 text-center text-sm font-semibold text-white shadow-sm hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-cyan:outline-indigo-600"
+                    className="block rounded-md bg-green-600 py-2 px-3 text-center text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-green:outline-indigo-600"
                   >
                     Add a new product
                   </button>
@@ -455,21 +452,15 @@ export default function Product() {
                           </th>
                           <th
                             scope="col"
-                            className="px-4 py-3.5 text-left text-sm font-semibold text-gray-900"
+                            className="py-3.5 pl-4 pr-4 text-left text-sm font-semibold text-gray-900 sm:pr-0"
                           >
-                            DESCRIPTION
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-4 py-3.5 text-left text-sm font-semibold text-gray-900"
-                          >
-                            PRICE
+                            CATEGORY
                           </th>
                           <th
                             scope="col"
                             className="py-3.5 pl-4 pr-4 text-left text-sm font-semibold text-gray-900 sm:pr-0"
                           >
-                            CATEGORY
+                            DATE
                           </th>
                         </tr>
                       </thead>
@@ -484,22 +475,26 @@ export default function Product() {
                               <td className="whitespace-nowrap py-4 pl-4 pr-4 text-sm font-medium text-gray-900 sm:pl-0">
                                 {person.productName}
                               </td>
-                              <td className="whitespace-nowrap p-4 text-sm text-gray-500">
-                                {person.description}
-                              </td>
-                              <td className="whitespace-nowrap p-4 text-sm text-gray-500">
-                                &#8358;{numberWithCommas(+person.price)}
-                              </td>
                               <td className="whitespace-nowrap py-4 pl-4 pr-4 text-sm text-gray-500 sm:pr-0">
                                 {person.category[0].category.toUpperCase()}
+                              </td>
+                              <td className="whitespace-nowrap py-4 pl-4 pr-4 text-sm text-gray-500 sm:pr-0">
+                                <time dateTime={person.createdAt}>
+                                  {moment(
+                                    new Date(person.createdAt),
+                                    "YYYYMMDD"
+                                  ).fromNow()}
+                                </time>
                               </td>
                             </tr>
                           ))}
                       </tbody>
                     </table>
-                  ) : productIsFetching ? (<div className="px-4 md:px-2">
-                    <Skeleton active />
-                  </div>) : (
+                  ) : productIsFetching ? (
+                    <div className="px-4 md:px-2">
+                      <Skeleton active />
+                    </div>
+                  ) : (
                     <div className="text-center mt-12">
                       <svg
                         className="mx-auto h-12 w-12 text-gray-400"
@@ -526,7 +521,7 @@ export default function Product() {
                         <button
                           type="button"
                           onClick={() => setOpen(true)}
-                          className="inline-flex items-center rounded-md bg-cyan-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"
+                          className="inline-flex items-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
                         >
                           <PlusIcon
                             className="-ml-0.5 mr-1.5 h-5 w-5"
@@ -597,56 +592,6 @@ export default function Product() {
                             </div>
                             <div className="">
                               <label
-                                htmlFor="description"
-                                className="block text-sm font-medium leading-6 text-gray-900"
-                              >
-                                Description{" "}
-                                <span className="text-red-600">
-                                  {inputValidationError(
-                                    formData.description,
-                                    "description"
-                                  )}
-                                </span>
-                              </label>
-                              <div className="mt-2">
-                                <input
-                                  id="description"
-                                  name="description"
-                                  // type="description"
-                                  onChange={updateFormData}
-                                  value={formData.description}
-                                  autoComplete="description"
-                                  className="block w-full rounded-md border-0 py-1.5 mb-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 pl-2"
-                                />
-                              </div>
-                            </div>
-                            <div className="">
-                              <label
-                                htmlFor="price"
-                                className="block text-sm font-medium leading-6 text-gray-900"
-                              >
-                                Price{" "}
-                                <span className="text-red-600">
-                                  {inputValidationError(
-                                    formData.price,
-                                    "price"
-                                  )}
-                                </span>
-                              </label>
-                              <div className="mt-2">
-                                <input
-                                  id="price"
-                                  name="price"
-                                  // type="price"
-                                  onChange={updateFormData}
-                                  value={formData.price}
-                                  autoComplete="price"
-                                  className="block w-full rounded-md border-0 py-1.5 mb-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 pl-2"
-                                />
-                              </div>
-                            </div>
-                            <div className="">
-                              <label
                                 htmlFor="addressLine"
                                 className="block text-sm font-medium leading-6 text-gray-900"
                               >
@@ -674,6 +619,56 @@ export default function Product() {
                                   onChange={(e: any) => {
                                     setCategoryId(e);
                                   }}
+                                  dropdownRender={(menu) => (
+                                    <>
+                                      {menu}
+                                      <Divider style={{ margin: "8px 0" }} />
+                                      {showCategory ? (
+                                        <Button
+                                          type="text"
+                                          className="mb-4"
+                                          onClick={handleShowCategory}
+                                        >
+                                          Hide Category
+                                        </Button>
+                                      ) : (
+                                        <Button
+                                          type="text"
+                                          onClick={handleShowCategory}
+                                        >
+                                          Add Category
+                                        </Button>
+                                      )}
+                                      {showCategory && (
+                                      <Space
+                                        style={{
+                                          padding: "0 8px 4px",
+                                          display: "flex",
+                                          flexDirection: "column",
+                                          alignItems: "flex-start",
+                                        }}
+                                      >
+                                        <Input
+                                          placeholder="Enter Category"
+                                          ref={inputRef}
+                                          value={name}
+                                          onChange={onNameChange}
+                                          style={{
+                                            border: "1px solid lightgrey",
+                                            borderRadius: "6px",
+                                          }}
+                                        />
+                                        <Button
+                                          type="text"
+                                          disabled={!name}
+                                          onClick={handleCategoryUpdate}
+                                        >
+                                          Submit
+                                        </Button>
+                                      </Space>
+                                      )}
+                                    </>
+                                  )}
                                 />
                               </div>
                             </div>
@@ -686,13 +681,8 @@ export default function Product() {
                         ) : (
                           <button
                             type="submit"
-                            className="inline-flex w-full justify-center rounded-md bg-cyan-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"
-                            disabled={
-                              !formData.productName ||
-                              !formData.description ||
-                              !formData.price ||
-                              !categoryId
-                            }
+                            className="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+                            disabled={!formData.productName || !categoryId}
                             onClick={handleProductUpdate}
                           >
                             Add

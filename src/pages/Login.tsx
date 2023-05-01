@@ -42,7 +42,6 @@ export default function Login() {
       });
     }
   };
-  console.log("DATA", loginData);
   return (
     <>
       <div>
@@ -51,12 +50,12 @@ export default function Login() {
       <div className="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <img
-            className="mx-auto h-12 w-auto"
-            src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
+            className="mx-auto h-32 w-auto"
+            src="logo-main.png"
             alt="Your Company"
           />
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Log in to your account
+            Log In
           </h2>
         </div>
 
@@ -81,7 +80,7 @@ export default function Login() {
                     onChange={updateLoginData}
                     value={loginData.email}
                     autoComplete="email"
-                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm sm:leading-6"
                   />
                 </div>
               </div>
@@ -104,7 +103,7 @@ export default function Login() {
                     onChange={updateLoginData}
                     value={loginData.password}
                     autoComplete="current-password"
-                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm sm:leading-6"
                   />
                 </div>
               </div>
@@ -115,7 +114,7 @@ export default function Login() {
                       id="remember-me"
                       name="remember-me"
                       type="checkbox"
-                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-600"
                     />
                     <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
                       Remember me
@@ -123,7 +122,7 @@ export default function Login() {
                   </div>
   
                   <div className="text-sm">
-                    <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
+                    <a href="#" className="font-medium text-green-600 hover:text-green-500">
                       Forgot your password?
                     </a>
                   </div>
@@ -137,7 +136,7 @@ export default function Login() {
                 ) : (
                   <button
                     type="submit"
-                    className="flex w-full justify-center rounded-md bg-indigo-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    className="flex w-full justify-center rounded-md bg-green-600 py-2 px-3 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
                     disabled={!loginData.email || !loginData.password}
                   >
                     Sign in
@@ -149,7 +148,7 @@ export default function Login() {
                   Dont have an account?{" "}
                   <Link
                     to="/signup"
-                    className="font-medium text-indigo-600 hover:text-indigo-500"
+                    className="font-medium text-green-600 hover:text-green-500"
                   >
                     Sign up
                   </Link>

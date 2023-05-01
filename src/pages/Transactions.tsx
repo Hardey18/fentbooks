@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import { Dialog, Menu, Transition } from "@headlessui/react";
 import {
   Bars3CenterLeftIcon,
@@ -28,20 +28,21 @@ import { useMutation, useQuery } from "react-query";
 import { AuthService } from "../services/api/auth";
 import { TransactionService } from "../services/api/transaction";
 import moment from "moment";
-import { Select, Skeleton, Spin } from "antd";
+import { Button, Divider, Input, Select, Skeleton, Space, Spin } from "antd";
+import type { InputRef } from "antd";
 import { CategoryService } from "../services/api/categories";
 import { toast, Toaster } from "react-hot-toast";
 import { numberWithCommas } from "../utils";
 
 const navigation = [
   { name: "Home", href: "/dashboard", icon: HomeIcon, current: false },
+  { name: "Income", href: "/invoice", icon: ScaleIcon, current: false },
   {
-    name: "Transactions",
+    name: "Expenses",
     href: "/transactions",
     icon: ClockIcon,
     current: true,
   },
-  { name: "Invoice", href: "/invoice", icon: ScaleIcon, current: false },
   { name: "Products", href: "/products", icon: CreditCardIcon, current: false },
   {
     name: "Categories",
@@ -56,31 +57,7 @@ const navigation = [
     current: false,
   },
 ];
-// const secondaryNavigation = [
-//   { name: 'Settings', href: '#', icon: CogIcon },
-//   { name: 'Help', href: '#', icon: QuestionMarkCircleIcon },
-//   { name: 'Privacy', href: '#', icon: ShieldCheckIcon },
-// ]
-const cards = [
-  { name: "Account balance", href: "#", icon: ScaleIcon, amount: "$30,659.45" },
-  { name: "Total Income", href: "#", icon: ScaleIcon, amount: "$30,659.45" },
-  { name: "Total Expenses", href: "#", icon: ScaleIcon, amount: "$30,659.45" },
-  { name: "Net Worth", href: "#", icon: ScaleIcon, amount: "$30,659.45" },
-  // More items...
-];
-const transactions = [
-  {
-    id: 1,
-    name: "Payment to Molly Sanders",
-    href: "#",
-    amount: "$20,000",
-    currency: "USD",
-    status: "success",
-    date: "July 11, 2020",
-    datetime: "2020-07-11",
-  },
-  // More transactions...
-];
+
 const statusStyles: any = {
   success: "bg-green-100 text-green-800",
   processing: "bg-yellow-100 text-yellow-800",
@@ -96,7 +73,19 @@ export default function Transactions() {
   const [open, setOpen] = useState(false);
   const [categoryId, setCategoryId]: any = useState();
   const [formData, setFormData]: any = useState({});
+  const [name, setName] = useState("");
+  const inputRef = useRef<InputRef>(null);
   const navigate = useNavigate();
+  const onNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setName(event.target.value);
+  };
+
+  console.log({formData, categoryId})
+
+  const [showCategory, setShowCategory] = useState(false);
+  const handleShowCategory = (event: any) => {
+    setShowCategory((current) => !current);
+  };
 
   const logout = () => {
     navigate("/login");
@@ -125,12 +114,35 @@ export default function Transactions() {
       TransactionService.createTransaction(payload, categoryId)
     );
 
+  const { mutateAsync: createCategory, isLoading: createCategoryLoading } =
+    useMutation((payload) => CategoryService.createCategory(payload));
+
+  const newCategoryData: any = {
+    category: name,
+  };
+
+  const handleCategoryUpdate = (event: any) => {
+    event.preventDefault();
+    createCategory(newCategoryData).then((res: any) => {
+      if (res?.data?.status === "success") {
+        toast.success("Category created successfully");
+        setName("");
+        setShowCategory((current) => !current);
+      } else {
+        toast.error(res?.response?.data?.message);
+      }
+    });
+  };
+
   const handleTransactionUpdate = (event: any) => {
     event.preventDefault();
     createTransaction(formData).then((res: any) => {
+      console.log("RESPONSE", res);
       if (res?.data?.status === "success") {
         toast.success("Transaction created successfully!");
         setOpen(false);
+      } else {
+        toast.error(res?.response?.data?.message);
       }
     });
   };
@@ -146,7 +158,7 @@ export default function Transactions() {
     () => TransactionService.getTransactions(),
     {
       keepPreviousData: true,
-      refetchInterval: 1000,
+      refetchInterval: 2000,
       refetchIntervalInBackground: true,
     }
   );
@@ -159,11 +171,9 @@ export default function Transactions() {
     isFetching: categoryIsFetching,
   }: any = useQuery(["category-data"], () => CategoryService.getCategories(), {
     keepPreviousData: true,
-    refetchInterval: 1000,
+    refetchInterval: 2000,
     refetchIntervalInBackground: true,
   });
-
-  console.log("TRANSACTION DATA", transactionData);
 
   return (
     <>
@@ -199,7 +209,7 @@ export default function Transactions() {
                 leaveFrom="translate-x-0"
                 leaveTo="-translate-x-full"
               >
-                <Dialog.Panel className="relative flex w-full max-w-xs flex-1 flex-col bg-cyan-700 pt-5 pb-4">
+                <Dialog.Panel className="relative flex w-full max-w-xs flex-1 flex-col bg-green-700 pt-5 pb-4">
                   <Transition.Child
                     as={Fragment}
                     enter="ease-in-out duration-300"
@@ -225,13 +235,13 @@ export default function Transactions() {
                   </Transition.Child>
                   <div className="flex flex-shrink-0 items-center px-4">
                     <img
-                      className="h-8 w-auto"
-                      src="https://tailwindui.com/img/logos/mark.svg?color=cyan&shade=300"
+                      className="h-12 w-auto rounded-full"
+                      src="logo.png"
                       alt="Easywire logo"
                     />
                   </div>
                   <nav
-                    className="mt-5 h-full flex-shrink-0 divide-y divide-cyan-800 overflow-y-auto"
+                    className="mt-5 h-full flex-shrink-0 divide-y divide-green-800 overflow-y-auto"
                     aria-label="Sidebar"
                   >
                     <div className="space-y-1 px-2">
@@ -241,14 +251,14 @@ export default function Transactions() {
                           to={item.href}
                           className={classNames(
                             item.current
-                              ? "bg-cyan-800 text-white"
-                              : "text-cyan-100 hover:bg-cyan-600 hover:text-white",
+                              ? "bg-green-800 text-white"
+                              : "text-green-100 hover:bg-green-600 hover:text-white",
                             "group flex items-center rounded-md px-2 py-2 text-base font-medium"
                           )}
                           aria-current={item.current ? "page" : undefined}
                         >
                           <item.icon
-                            className="mr-4 h-6 w-6 flex-shrink-0 text-cyan-200"
+                            className="mr-4 h-6 w-6 flex-shrink-0 text-green-200"
                             aria-hidden="true"
                           />
                           {item.name}
@@ -261,9 +271,9 @@ export default function Transactions() {
                           <a
                             key={item.name}
                             href={item.href}
-                            className="group flex items-center rounded-md px-2 py-2 text-base font-medium text-cyan-100 hover:bg-cyan-600 hover:text-white"
+                            className="group flex items-center rounded-md px-2 py-2 text-base font-medium text-green-100 hover:bg-green-600 hover:text-white"
                           >
-                            <item.icon className="mr-4 h-6 w-6 text-cyan-200" aria-hidden="true" />
+                            <item.icon className="mr-4 h-6 w-6 text-green-200" aria-hidden="true" />
                             {item.name}
                           </a>
                         ))}
@@ -282,16 +292,16 @@ export default function Transactions() {
         {/* Static sidebar for desktop */}
         <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
           {/* Sidebar component, swap this element with another sidebar if you like */}
-          <div className="flex flex-grow flex-col overflow-y-auto bg-cyan-700 pt-5 pb-4">
+          <div className="flex flex-grow flex-col overflow-y-auto bg-green-700 pt-5 pb-4">
             <div className="flex flex-shrink-0 items-center px-4">
               <img
-                className="h-8 w-auto"
-                src="https://tailwindui.com/img/logos/mark.svg?color=cyan&shade=300"
+                className="h-12 w-auto rounded-full"
+                src="logo.png"
                 alt="Easywire logo"
               />
             </div>
             <nav
-              className="mt-5 flex flex-1 flex-col divide-y divide-cyan-800 overflow-y-auto"
+              className="mt-5 flex flex-1 flex-col divide-y divide-green-800 overflow-y-auto"
               aria-label="Sidebar"
             >
               <div className="space-y-1 px-2">
@@ -301,14 +311,14 @@ export default function Transactions() {
                     href={item.href}
                     className={classNames(
                       item.current
-                        ? "bg-cyan-800 text-white"
-                        : "text-cyan-100 hover:bg-cyan-600 hover:text-white",
+                        ? "bg-green-800 text-white"
+                        : "text-green-100 hover:bg-green-600 hover:text-white",
                       "group flex items-center rounded-md px-2 py-2 text-sm font-medium leading-6"
                     )}
                     aria-current={item.current ? "page" : undefined}
                   >
                     <item.icon
-                      className="mr-4 h-6 w-6 flex-shrink-0 text-cyan-200"
+                      className="mr-4 h-6 w-6 flex-shrink-0 text-green-200"
                       aria-hidden="true"
                     />
                     {item.name}
@@ -323,7 +333,7 @@ export default function Transactions() {
           <div className="flex h-16 flex-shrink-0 border-b border-gray-200 bg-white lg:border-none">
             <button
               type="button"
-              className="border-r border-gray-200 px-4 text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-500 lg:hidden"
+              className="border-r border-gray-200 px-4 text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500 lg:hidden"
               onClick={() => setSidebarOpen(true)}
             >
               <span className="sr-only">Open sidebar</span>
@@ -333,13 +343,13 @@ export default function Transactions() {
             <div className="flex flex-1 justify-between px-4 sm:px-6 lg:mx-auto lg:max-w-6xl lg:px-8">
               <div className="flex flex-1">
                 <h1 className="ml-3 text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:leading-9 mt-4">
-                  Transactions
+                  Expenses
                 </h1>
               </div>
               <div className="ml-4 flex items-center md:ml-6">
                 <button
                   type="button"
-                  className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
+                  className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                 >
                   <span className="sr-only">View notifications</span>
                   <BellIcon className="h-6 w-6" aria-hidden="true" />
@@ -348,7 +358,7 @@ export default function Transactions() {
                 {/* Profile dropdown */}
                 <Menu as="div" className="relative ml-3">
                   <div>
-                    <Menu.Button className="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 lg:rounded-md lg:p-2 lg:hover:bg-gray-50">
+                    <Menu.Button className="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 lg:rounded-md lg:p-2 lg:hover:bg-gray-50">
                       {data?.data?.data?.profilePhoto ? (
                         <img
                           className="h-8 w-8 rounded-full"
@@ -423,9 +433,9 @@ export default function Transactions() {
               <button
                 type="button"
                 onClick={() => setOpen(true)}
-                className="rounded-md bg-cyan-600 py-2.5 px-3.5 text-sm font-semibold text-white shadow-sm hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"
+                className="rounded-md bg-green-600 py-2.5 px-3.5 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
               >
-                Add a new Category
+                Add a new Expense
               </button>
             </div>
           )}
@@ -463,6 +473,9 @@ export default function Transactions() {
                               )}
                             >
                               {transaction.category[0].category.toUpperCase()}
+                            </span>
+                            <span className="whitespace-nowrap text-sm text-gray-500">
+                              {transaction.vendor}
                             </span>
                             <span className="whitespace-nowrap text-sm text-gray-500">
                               <time dateTime={transaction.createdAt}>
@@ -516,6 +529,12 @@ export default function Transactions() {
                               className="bg-gray-50 px-6 py-3 text-right text-sm font-semibold text-gray-900"
                               scope="col"
                             >
+                              VENDOR
+                            </th>
+                            <th
+                              className="bg-gray-50 px-6 py-3 text-right text-sm font-semibold text-gray-900"
+                              scope="col"
+                            >
                               DATE
                             </th>
                           </tr>
@@ -553,6 +572,9 @@ export default function Transactions() {
                                   >
                                     {transaction.category[0].category.toUpperCase()}
                                   </span>
+                                </td>
+                                <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-500">
+                                  {transaction.vendor}
                                 </td>
                                 <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-500">
                                   <time dateTime={transaction.createdAt}>
@@ -593,22 +615,22 @@ export default function Transactions() {
                   />
                 </svg>
                 <h3 className="mt-2 text-sm font-semibold text-gray-900">
-                  No transactions
+                  No expenses
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  Create a New Transaction
+                  Create a New Expense
                 </p>
                 <div className="mt-6">
                   <button
                     type="button"
                     onClick={() => setOpen(true)}
-                    className="inline-flex items-center rounded-md bg-cyan-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"
+                    className="inline-flex items-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
                   >
                     <PlusIcon
                       className="-ml-0.5 mr-1.5 h-5 w-5"
                       aria-hidden="true"
                     />
-                    New Transaction
+                    New Expense
                   </button>
                 </div>
               </div>
@@ -645,42 +667,6 @@ export default function Transactions() {
                           <div className="w-full">
                             <div className="">
                               <label
-                                htmlFor="amount"
-                                className="block text-sm font-medium leading-6 text-gray-900"
-                              >
-                                Amount{" "}
-                              </label>
-                              <div className="mt-2">
-                                <input
-                                  id="amount"
-                                  name="amount"
-                                  onChange={updateFormData}
-                                  value={formData.amount}
-                                  autoComplete="amount"
-                                  className="block w-full rounded-md border-0 py-1.5 mb-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 pl-2"
-                                />
-                              </div>
-                            </div>
-                            <div className="">
-                              <label
-                                htmlFor="description"
-                                className="block text-sm font-medium leading-6 text-gray-900"
-                              >
-                                Description{" "}
-                              </label>
-                              <div className="mt-2">
-                                <input
-                                  id="description"
-                                  name="description"
-                                  onChange={updateFormData}
-                                  value={formData.description}
-                                  autoComplete="description"
-                                  className="block w-full rounded-md border-0 py-1.5 mb-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 pl-2"
-                                />
-                              </div>
-                            </div>
-                            <div className="">
-                              <label
                                 htmlFor="category"
                                 className="block text-sm font-medium leading-6 text-gray-900"
                               >
@@ -708,9 +694,111 @@ export default function Transactions() {
                                   onChange={(e: any) => {
                                     setCategoryId(e);
                                   }}
+                                  dropdownRender={(menu) => (
+                                    <>
+                                      {menu}
+                                      <Divider style={{ margin: "8px 0" }} />
+                                      {showCategory ? (
+                                        <Button
+                                          type="text"
+                                          className="mb-4"
+                                          onClick={handleShowCategory}
+                                        >
+                                          Hide Category
+                                        </Button>
+                                      ) : (
+                                        <Button
+                                          type="text"
+                                          onClick={handleShowCategory}
+                                        >
+                                          Add Category
+                                        </Button>
+                                      )}
+                                      {showCategory && (
+                                        <Space
+                                          style={{
+                                            padding: "0 8px 4px",
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            alignItems: "flex-start",
+                                          }}
+                                        >
+                                          <Input
+                                            placeholder="Enter Category"
+                                            ref={inputRef}
+                                            value={name}
+                                            onChange={onNameChange}
+                                            style={{
+                                              border: "1px solid lightgrey",
+                                              borderRadius: "6px",
+                                            }}
+                                          />
+                                          <Button
+                                            type="text"
+                                            disabled={!name}
+                                            onClick={handleCategoryUpdate}
+                                          >
+                                            Submit
+                                          </Button>
+                                        </Space>
+                                      )}
+                                    </>
+                                  )}
                                 />
-                                {/* <Select.Option>Hello</Select.Option> */}
-                                {/* </Select> */}
+                              </div>
+                            </div>
+                            <div className="">
+                              <label
+                                htmlFor="description"
+                                className="block text-sm font-medium leading-6 text-gray-900"
+                              >
+                                Description{" "}
+                              </label>
+                              <div className="mt-2">
+                                <input
+                                  id="description"
+                                  name="description"
+                                  onChange={updateFormData}
+                                  value={formData.description}
+                                  autoComplete="description"
+                                  className="block w-full rounded-md border-0 py-1.5 mb-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 pl-2"
+                                />
+                              </div>
+                            </div>
+                            <div className="">
+                              <label
+                                htmlFor="amount"
+                                className="block text-sm font-medium leading-6 text-gray-900"
+                              >
+                                Amount{" "}
+                              </label>
+                              <div className="mt-2">
+                                <input
+                                  id="amount"
+                                  name="amount"
+                                  onChange={updateFormData}
+                                  value={formData?.amount}
+                                  autoComplete="amount"
+                                  className="block w-full rounded-md border-0 py-1.5 mb-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 pl-2"
+                                />
+                              </div>
+                            </div>
+                            <div className="">
+                              <label
+                                htmlFor="vendor"
+                                className="block text-sm font-medium leading-6 text-gray-900"
+                              >
+                                Vendor{" "}
+                              </label>
+                              <div className="mt-2">
+                                <input
+                                  id="vendor"
+                                  name="vendor"
+                                  onChange={updateFormData}
+                                  value={formData.vendor}
+                                  autoComplete="vendor"
+                                  className="block w-full rounded-md border-0 py-1.5 mb-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 pl-2"
+                                />
                               </div>
                             </div>
                           </div>
@@ -722,8 +810,14 @@ export default function Transactions() {
                         ) : (
                           <button
                             type="button"
-                            className="inline-flex w-full justify-center rounded-md bg-cyan-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"
+                            className="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
                             onClick={handleTransactionUpdate}
+                            disabled={
+                              !formData.amount ||
+                              !formData.description ||
+                              !formData.vendor ||
+                              !categoryId
+                            }
                           >
                             Add
                           </button>

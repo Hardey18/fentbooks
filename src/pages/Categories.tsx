@@ -30,16 +30,17 @@ import { useMutation, useQuery } from "react-query";
 import { AuthService } from "../services/api/auth";
 import { CategoryService } from "../services/api/categories";
 import { Skeleton, Spin } from "antd";
+import { toast, Toaster } from "react-hot-toast";
 
 const navigation = [
   { name: "Home", href: "/dashboard", icon: HomeIcon, current: false },
+  { name: "Income", href: "/invoice", icon: ScaleIcon, current: false },
   {
-    name: "Transactions",
+    name: "Expenses",
     href: "/transactions",
     icon: ClockIcon,
     current: false,
   },
-  { name: "Invoice", href: "/invoice", icon: ScaleIcon, current: false },
   { name: "Products", href: "/products", icon: CreditCardIcon, current: false },
   {
     name: "Categories",
@@ -107,7 +108,7 @@ export default function Categories() {
     () => AuthService.getProfile(parsedData._id),
     {
       keepPreviousData: true,
-      refetchInterval: 1000,
+      refetchInterval: 2000,
       refetchIntervalInBackground: true,
     }
   );
@@ -119,40 +120,13 @@ export default function Categories() {
     isFetching: categoryIsFetching,
   }: any = useQuery(["category-data"], () => CategoryService.getCategories(), {
     keepPreviousData: true,
-    refetchInterval: 1000,
+    refetchInterval: 2000,
+    refetchOnWindowFocus: "always",
     refetchIntervalInBackground: true,
   });
 
-  const projects = [
-    {
-      name: "Graph API",
-      initials: "GA",
-      href: "#",
-      members: 16,
-      bgColor: "bg-pink-600",
-    },
-    {
-      name: "Component Design",
-      initials: "CD",
-      href: "#",
-      members: 12,
-      bgColor: "bg-purple-600",
-    },
-    {
-      name: "Templates",
-      initials: "T",
-      href: "#",
-      members: 16,
-      bgColor: "bg-yellow-500",
-    },
-    {
-      name: "React Components",
-      initials: "RC",
-      href: "#",
-      members: 8,
-      bgColor: "bg-green-500",
-    },
-  ];
+  console.log("ALL CATEGORIES", categoryData);
+
   const { mutateAsync: createCategory, isLoading: createCategoryLoading } =
     useMutation((payload) => CategoryService.createCategory(payload));
 
@@ -163,14 +137,21 @@ export default function Categories() {
   const handleCategoryUpdate = (event: any) => {
     event.preventDefault();
     createCategory(newCategoryData).then((res: any) => {
+      console.log("RESPONSE", res);
       if (res?.data?.status === "success") {
         setOpen(false);
+        toast.success("Category created successfully");
+      } else {
+        toast.error(res?.response?.data?.message);
       }
     });
   };
 
   return (
     <>
+      <div>
+        <Toaster position="top-right" reverseOrder={false} />
+      </div>
       <div className="min-h-full">
         <Transition.Root show={sidebarOpen} as={Fragment}>
           <Dialog
@@ -200,7 +181,7 @@ export default function Categories() {
                 leaveFrom="translate-x-0"
                 leaveTo="-translate-x-full"
               >
-                <Dialog.Panel className="relative flex w-full max-w-xs flex-1 flex-col bg-cyan-700 pt-5 pb-4">
+                <Dialog.Panel className="relative flex w-full max-w-xs flex-1 flex-col bg-green-700 pt-5 pb-4">
                   <Transition.Child
                     as={Fragment}
                     enter="ease-in-out duration-300"
@@ -226,13 +207,13 @@ export default function Categories() {
                   </Transition.Child>
                   <div className="flex flex-shrink-0 items-center px-4">
                     <img
-                      className="h-8 w-auto"
-                      src="https://tailwindui.com/img/logos/mark.svg?color=cyan&shade=300"
+                      className="h-12 w-auto rounded-full"
+                      src="logo.png"
                       alt="Easywire logo"
                     />
                   </div>
                   <nav
-                    className="mt-5 h-full flex-shrink-0 divide-y divide-cyan-800 overflow-y-auto"
+                    className="mt-5 h-full flex-shrink-0 divide-y divide-green-800 overflow-y-auto"
                     aria-label="Sidebar"
                   >
                     <div className="space-y-1 px-2">
@@ -242,14 +223,14 @@ export default function Categories() {
                           to={item.href}
                           className={classNames(
                             item.current
-                              ? "bg-cyan-800 text-white"
-                              : "text-cyan-100 hover:bg-cyan-600 hover:text-white",
+                              ? "bg-green-800 text-white"
+                              : "text-green-100 hover:bg-green-600 hover:text-white",
                             "group flex items-center rounded-md px-2 py-2 text-base font-medium"
                           )}
                           aria-current={item.current ? "page" : undefined}
                         >
                           <item.icon
-                            className="mr-4 h-6 w-6 flex-shrink-0 text-cyan-200"
+                            className="mr-4 h-6 w-6 flex-shrink-0 text-green-200"
                             aria-hidden="true"
                           />
                           {item.name}
@@ -269,16 +250,16 @@ export default function Categories() {
         {/* Static sidebar for desktop */}
         <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
           {/* Sidebar component, swap this element with another sidebar if you like */}
-          <div className="flex flex-grow flex-col overflow-y-auto bg-cyan-700 pt-5 pb-4">
+          <div className="flex flex-grow flex-col overflow-y-auto bg-green-700 pt-5 pb-4">
             <div className="flex flex-shrink-0 items-center px-4">
               <img
-                className="h-8 w-auto"
-                src="https://tailwindui.com/img/logos/mark.svg?color=cyan&shade=300"
+                className="h-12 w-auto rounded-full"
+                src="logo.png"
                 alt="Easywire logo"
               />
             </div>
             <nav
-              className="mt-5 flex flex-1 flex-col divide-y divide-cyan-800 overflow-y-auto"
+              className="mt-5 flex flex-1 flex-col divide-y divide-green-800 overflow-y-auto"
               aria-label="Sidebar"
             >
               <div className="space-y-1 px-2">
@@ -288,14 +269,14 @@ export default function Categories() {
                     href={item.href}
                     className={classNames(
                       item.current
-                        ? "bg-cyan-800 text-white"
-                        : "text-cyan-100 hover:bg-cyan-600 hover:text-white",
+                        ? "bg-green-800 text-white"
+                        : "text-green-100 hover:bg-green-600 hover:text-white",
                       "group flex items-center rounded-md px-2 py-2 text-sm font-medium leading-6"
                     )}
                     aria-current={item.current ? "page" : undefined}
                   >
                     <item.icon
-                      className="mr-4 h-6 w-6 flex-shrink-0 text-cyan-200"
+                      className="mr-4 h-6 w-6 flex-shrink-0 text-green-200"
                       aria-hidden="true"
                     />
                     {item.name}
@@ -310,7 +291,7 @@ export default function Categories() {
           <div className="flex h-16 flex-shrink-0 border-b border-gray-200 bg-white lg:border-none">
             <button
               type="button"
-              className="border-r border-gray-200 px-4 text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-500 lg:hidden"
+              className="border-r border-gray-200 px-4 text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500 lg:hidden"
               onClick={() => setSidebarOpen(true)}
             >
               <span className="sr-only">Open sidebar</span>
@@ -326,7 +307,7 @@ export default function Categories() {
               <div className="ml-4 flex items-center md:ml-6">
                 <button
                   type="button"
-                  className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
+                  className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                 >
                   <span className="sr-only">View notifications</span>
                   <BellIcon className="h-6 w-6" aria-hidden="true" />
@@ -335,7 +316,7 @@ export default function Categories() {
                 {/* Profile dropdown */}
                 <Menu as="div" className="relative ml-3">
                   <div>
-                    <Menu.Button className="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 lg:rounded-md lg:p-2 lg:hover:bg-gray-50">
+                    <Menu.Button className="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 lg:rounded-md lg:p-2 lg:hover:bg-gray-50">
                       {data?.data?.data?.profilePhoto ? (
                         <img
                           className="h-8 w-8 rounded-full"
@@ -410,7 +391,7 @@ export default function Categories() {
               <button
                 type="button"
                 onClick={() => setOpen(true)}
-                className="rounded-md bg-cyan-600 py-2.5 px-3.5 text-sm font-semibold text-white shadow-sm hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"
+                className="rounded-md bg-green-600 py-2.5 px-3.5 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
               >
                 Add a new Category
               </button>
@@ -431,19 +412,16 @@ export default function Categories() {
                     >
                       <div
                         className={
-                          "bg-cyan-600 flex w-16 flex-shrink-0 items-center justify-center rounded-l-md text-sm font-medium text-white"
+                          "bg-green-600 flex w-16 flex-shrink-0 items-center justify-center rounded-l-md text-sm font-medium text-white"
                         }
                       >
                         {project.category[0]}
                       </div>
                       <div className="flex flex-1 items-center justify-between truncate rounded-r-md border-t border-r border-b border-gray-200 bg-white">
                         <div className="flex-1 truncate px-4 py-6 text-sm">
-                          <a
-                            href={project.category}
-                            className="font-medium text-gray-900 hover:text-gray-600"
-                          >
+                          <div className="font-medium text-gray-900 hover:text-gray-600">
                             {project.category}
-                          </a>
+                          </div>
                         </div>
                       </div>
                     </li>
@@ -452,8 +430,8 @@ export default function Categories() {
             </main>
           ) : categoryIsFetching ? (
             <div className="p-4">
-                <Skeleton active />
-              </div>
+              <Skeleton active />
+            </div>
           ) : (
             <div className="text-center mt-12">
               <svg
@@ -481,7 +459,7 @@ export default function Categories() {
                 <button
                   type="button"
                   onClick={() => setOpen(true)}
-                  className="inline-flex items-center rounded-md bg-cyan-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"
+                  className="inline-flex items-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
                 >
                   <PlusIcon
                     className="-ml-0.5 mr-1.5 h-5 w-5"
@@ -549,8 +527,9 @@ export default function Categories() {
                         ) : (
                           <button
                             type="button"
-                            className="inline-flex w-full justify-center rounded-md bg-cyan-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"
+                            className="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
                             onClick={handleCategoryUpdate}
+                            disabled={!category}
                           >
                             Add
                           </button>

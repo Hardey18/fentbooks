@@ -1,6 +1,17 @@
 import axios from "../axios";
 
 export const AuthService = {
+  signUp: async (payload: any) => {
+    let response;
+    try {
+      response = await axios.post("/user/create", payload, {
+        headers: { "Content-Type": "application/json", accept: "*/*" },
+      });
+    } catch (error) {
+      response = error;
+    }
+    return response;
+  },
   login: async (payload: any) => {
     let response;
     try {

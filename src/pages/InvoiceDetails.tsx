@@ -39,16 +39,17 @@ import { numberWithCommas } from "../utils";
 import { toast, Toaster } from "react-hot-toast";
 import { Spin } from "antd";
 import { GrPrevious } from "react-icons/gr";
+import { EmailService } from "../services/api/sendEmail";
 
 const navigation = [
   { name: "Home", href: "/dashboard", icon: HomeIcon, current: false },
+  { name: "Income", href: "/invoice", icon: ScaleIcon, current: true },
   {
-    name: "Transactions",
+    name: "Expenses",
     href: "/transactions",
     icon: ClockIcon,
     current: false,
   },
-  { name: "Invoice", href: "/invoice", icon: ScaleIcon, current: true },
   { name: "Products", href: "/products", icon: CreditCardIcon, current: false },
   {
     name: "Categories",
@@ -94,48 +95,7 @@ const eventTypes = {
   advanced: { icon: HandThumbUpIcon, bgColorClass: "bg-blue-500" },
   completed: { icon: CheckIcon, bgColorClass: "bg-green-500" },
 };
-const timeline = [
-  {
-    id: 1,
-    type: eventTypes.applied,
-    content: "Applied to",
-    target: "Front End Developer",
-    date: "Sep 20",
-    datetime: "2020-09-20",
-  },
-  {
-    id: 2,
-    type: eventTypes.advanced,
-    content: "Advanced to phone screening by",
-    target: "Bethany Blake",
-    date: "Sep 22",
-    datetime: "2020-09-22",
-  },
-  {
-    id: 3,
-    type: eventTypes.completed,
-    content: "Completed phone screening with",
-    target: "Martha Gardner",
-    date: "Sep 28",
-    datetime: "2020-09-28",
-  },
-  {
-    id: 4,
-    type: eventTypes.advanced,
-    content: "Advanced to interview by",
-    target: "Bethany Blake",
-    date: "Sep 30",
-    datetime: "2020-09-30",
-  },
-  {
-    id: 5,
-    type: eventTypes.completed,
-    content: "Completed interview with",
-    target: "Katherine Snyder",
-    date: "Oct 4",
-    datetime: "2020-10-04",
-  },
-];
+
 const comments = [
   {
     id: 1,
@@ -203,6 +163,7 @@ function classNames(...classes: any) {
 export default function InvoiceDetails() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [open, setOpen] = useState(false);
+  const [amount, setAmount] = useState("");
   const navigate = useNavigate();
   const invoiceId = window.location.pathname.split("/").at(-1);
   const logout = () => {
@@ -221,10 +182,11 @@ export default function InvoiceDetails() {
     () => InvoiceService.getSingleInvoice(invoiceId),
     {
       keepPreviousData: true,
-      refetchInterval: 1000,
+      refetchInterval: 2000,
       refetchIntervalInBackground: true,
     }
   );
+  console.log("INVOICE DATA", invoiceData);
   const userData: any = localStorage.getItem("userData");
   const parsedData = JSON.parse(userData);
   const { isLoading, isError, error, data, isFetching }: any = useQuery(
@@ -235,14 +197,34 @@ export default function InvoiceDetails() {
     }
   );
 
+  const { mutateAsync: emailInvoice, isLoading: isEmailInvoiceLoading } =
+    useMutation((payload) => EmailService.emailInvoice(invoiceId));
+
+  const handleSendEmail = (event: any) => {
+    event.preventDefault();
+    emailInvoice().then((res: any) => {
+      if (res?.data?.status === "success") {
+        setOpen(false);
+        toast.success("Email sent to customer successfully");
+      } else {
+        toast.error(res?.response?.data?.message);
+      }
+    });
+  };
+
   const { mutateAsync: verifyInvoice, isLoading: isVerifyInvoiceLoading } =
-    useMutation((payload) => InvoiceService.verifyInvoice(invoiceId));
+    useMutation((payload) =>
+      InvoiceService.verifyInvoice(invoiceId, { amount })
+    );
 
   const handleInvoiceUpdate = (event: any) => {
     event.preventDefault();
     verifyInvoice().then((res: any) => {
       if (res?.data?.status === "success") {
+        setOpen(false);
         toast.success("Invoice confirmed successfully");
+      } else {
+        toast.error(res?.response?.data?.message);
       }
     });
   };
@@ -282,7 +264,7 @@ export default function InvoiceDetails() {
                 leaveFrom="translate-x-0"
                 leaveTo="-translate-x-full"
               >
-                <Dialog.Panel className="relative flex w-full max-w-xs flex-1 flex-col bg-cyan-700 pt-5 pb-4">
+                <Dialog.Panel className="relative flex w-full max-w-xs flex-1 flex-col bg-green-700 pt-5 pb-4">
                   <Transition.Child
                     as={Fragment}
                     enter="ease-in-out duration-300"
@@ -308,13 +290,13 @@ export default function InvoiceDetails() {
                   </Transition.Child>
                   <div className="flex flex-shrink-0 items-center px-4">
                     <img
-                      className="h-8 w-auto"
-                      src="https://tailwindui.com/img/logos/mark.svg?color=cyan&shade=300"
+                      className="h-12 w-auto rounded-full"
+                      src="logo.png"
                       alt="Easywire logo"
                     />
                   </div>
                   <nav
-                    className="mt-5 h-full flex-shrink-0 divide-y divide-cyan-800 overflow-y-auto"
+                    className="mt-5 h-full flex-shrink-0 divide-y divide-green-800 overflow-y-auto"
                     aria-label="Sidebar"
                   >
                     <div className="space-y-1 px-2">
@@ -324,14 +306,14 @@ export default function InvoiceDetails() {
                           to={item.href}
                           className={classNames(
                             item.current
-                              ? "bg-cyan-800 text-white"
-                              : "text-cyan-100 hover:bg-cyan-600 hover:text-white",
+                              ? "bg-green-800 text-white"
+                              : "text-green-100 hover:bg-green-600 hover:text-white",
                             "group flex items-center rounded-md px-2 py-2 text-base font-medium"
                           )}
                           aria-current={item.current ? "page" : undefined}
                         >
                           <item.icon
-                            className="mr-4 h-6 w-6 flex-shrink-0 text-cyan-200"
+                            className="mr-4 h-6 w-6 flex-shrink-0 text-green-200"
                             aria-hidden="true"
                           />
                           {item.name}
@@ -351,16 +333,16 @@ export default function InvoiceDetails() {
         {/* Static sidebar for desktop */}
         <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
           {/* Sidebar component, swap this element with another sidebar if you like */}
-          <div className="flex flex-grow flex-col overflow-y-auto bg-cyan-700 pt-5 pb-4">
+          <div className="flex flex-grow flex-col overflow-y-auto bg-green-700 pt-5 pb-4">
             <div className="flex flex-shrink-0 items-center px-4">
               <img
-                className="h-8 w-auto"
-                src="https://tailwindui.com/img/logos/mark.svg?color=cyan&shade=300"
+                className="h-12 w-auto rounded-full"
+                src="logo.png"
                 alt="Easywire logo"
               />
             </div>
             <nav
-              className="mt-5 flex flex-1 flex-col divide-y divide-cyan-800 overflow-y-auto"
+              className="mt-5 flex flex-1 flex-col divide-y divide-green-800 overflow-y-auto"
               aria-label="Sidebar"
             >
               <div className="space-y-1 px-2">
@@ -370,14 +352,14 @@ export default function InvoiceDetails() {
                     href={item.href}
                     className={classNames(
                       item.current
-                        ? "bg-cyan-800 text-white"
-                        : "text-cyan-100 hover:bg-cyan-600 hover:text-white",
+                        ? "bg-green-800 text-white"
+                        : "text-green-100 hover:bg-green-600 hover:text-white",
                       "group flex items-center rounded-md px-2 py-2 text-sm font-medium leading-6"
                     )}
                     aria-current={item.current ? "page" : undefined}
                   >
                     <item.icon
-                      className="mr-4 h-6 w-6 flex-shrink-0 text-cyan-200"
+                      className="mr-4 h-6 w-6 flex-shrink-0 text-green-200"
                       aria-hidden="true"
                     />
                     {item.name}
@@ -392,7 +374,7 @@ export default function InvoiceDetails() {
           <div className="flex h-16 flex-shrink-0 border-b border-gray-200 bg-white lg:border-none">
             <button
               type="button"
-              className="border-r border-gray-200 px-4 text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-500 lg:hidden"
+              className="border-r border-gray-200 px-4 text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500 lg:hidden"
               onClick={() => setSidebarOpen(true)}
             >
               <span className="sr-only">Open sidebar</span>
@@ -408,7 +390,7 @@ export default function InvoiceDetails() {
               <div className="ml-4 flex items-center md:ml-6">
                 <button
                   type="button"
-                  className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
+                  className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                 >
                   <span className="sr-only">View notifications</span>
                   <BellIcon className="h-6 w-6" aria-hidden="true" />
@@ -417,7 +399,7 @@ export default function InvoiceDetails() {
                 {/* Profile dropdown */}
                 <Menu as="div" className="relative ml-3">
                   <div>
-                    <Menu.Button className="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 lg:rounded-md lg:p-2 lg:hover:bg-gray-50">
+                    <Menu.Button className="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 lg:rounded-md lg:p-2 lg:hover:bg-gray-50">
                       {data?.data?.data?.profilePhoto ? (
                         <img
                           className="h-8 w-8 rounded-full"
@@ -494,7 +476,7 @@ export default function InvoiceDetails() {
                 <div className="flex items-center space-x-5">
                   <Link to="/invoice">
                     <GrPrevious
-                      className="h-6 w-5 flex-none text-cyan-600"
+                      className="h-6 w-5 flex-none text-green-600"
                       aria-hidden="true"
                     />
                   </Link>
@@ -537,10 +519,10 @@ export default function InvoiceDetails() {
                     <div className="mt-2 grid text-sm leading-6 text-gray-600">
                       <div className="flex gap-x-3">
                         <CheckIcon
-                          className="h-6 w-5 flex-none text-cyan-600"
+                          className="h-6 w-5 flex-none text-green-600"
                           aria-hidden="true"
                         />
-                        <span className="font-bold">INVOICE VERIFIED</span>
+                        <span className="font-bold">PAYMENT RECEIVED</span>
                       </div>
                     </div>
                   ) : isVerifyInvoiceLoading ? (
@@ -548,22 +530,113 @@ export default function InvoiceDetails() {
                       <Spin />
                     </div>
                   ) : (
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => setOpen(true)}
+                        className="inline-flex items-center justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+                      >
+                        Receive Payment
+                      </button>
+                    </div>
+                  )}
+                  {isEmailInvoiceLoading ? (
+                    <div className="flex justify-center items-center w-full">
+                      <Spin />
+                    </div>
+                  ) : (
                     <button
                       type="button"
-                      onClick={handleInvoiceUpdate}
-                      className="inline-flex items-center justify-center rounded-md bg-cyan-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"
+                      className="inline-flex items-center justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+                      onClick={handleSendEmail}
                     >
-                      Confirm Invoice
+                      Email Invoice
                     </button>
                   )}
-                  <button
-                    type="button"
-                    className="inline-flex items-center justify-center rounded-md bg-cyan-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"
-                  >
-                    Download Invoice
-                  </button>
+                  {!invoiceData?.data?.data[0].verified && (
+                    <div className="mt-2 grid text-sm leading-6 text-gray-600">
+                      <div className="flex gap-x-3">
+                        <span className="font-bold">BALANCE: &#8358;{numberWithCommas(+invoiceData?.data?.data[0].trackTotal)}</span>
+                      </div>
+                    </div>
+
+                  )}
                 </div>
               </div>
+
+              <Transition.Root show={open} as={Fragment}>
+                <Dialog as="div" className="relative z-10" onClose={setOpen}>
+                  <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0"
+                    enterTo="opacity-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
+                  >
+                    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+                  </Transition.Child>
+
+                  <div className="fixed inset-0 z-10 overflow-y-auto">
+                    <div className="flex mt-16 items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                      <Transition.Child
+                        as={Fragment}
+                        enter="ease-out duration-300"
+                        enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                        enterTo="opacity-100 translate-y-0 sm:scale-100"
+                        leave="ease-in duration-200"
+                        leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                        leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                      >
+                        <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6 w-full">
+                          <div className="mt-5 sm:mt-2">
+                            <div className="sm:flex sm:items-start">
+                              <div className="w-full">
+                                <div className="">
+                                  <label
+                                    htmlFor="about"
+                                    className="block text-sm font-medium leading-6 text-gray-900"
+                                  >
+                                    Amount{" "}
+                                  </label>
+                                  <div className="mt-2">
+                                    <input
+                                      id="about"
+                                      name="about"
+                                      // type="about"
+                                      onChange={(e) =>
+                                        setAmount(e.target.value)
+                                      }
+                                      value={amount}
+                                      autoComplete="about"
+                                      className="block w-full rounded-md border-0 py-1.5 mb-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 pl-2"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            {isVerifyInvoiceLoading ? (
+                              <div className="flex justify-center items-center w-full">
+                                <Spin />
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                className="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+                                onClick={handleInvoiceUpdate}
+                                disabled={!amount}
+                              >
+                                Add
+                              </button>
+                            )}
+                          </div>
+                        </Dialog.Panel>
+                      </Transition.Child>
+                    </div>
+                  </div>
+                </Dialog>
+              </Transition.Root>
 
               <div className="mx-auto mt-8 grid max-w-3xl grid-cols-1 gap-6 sm:px-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
                 <div className="space-y-6 lg:col-span-2 lg:col-start-1">
@@ -664,8 +737,16 @@ export default function InvoiceDetails() {
                             <dd className="mt-1 text-sm text-gray-900">
                               &#8358;
                               {numberWithCommas(
-                                +invoiceData?.data?.data[0].product[0].price
+                                +invoiceData?.data?.data[0].totalPrice
                               )}
+                            </dd>
+                          </div>
+                          <div className="sm:col-span-1">
+                            <dt className="text-sm font-medium text-gray-500">
+                              Quantity
+                            </dt>
+                            <dd className="mt-1 text-sm text-gray-900">
+                              {invoiceData?.data?.data[0].quantity}
                             </dd>
                           </div>
                           <div className="sm:col-span-2">
@@ -700,7 +781,7 @@ export default function InvoiceDetails() {
                             <span>
                               &#8358;
                               {numberWithCommas(
-                                +invoiceData?.data?.data[0].totalPrice
+                                +invoiceData?.data?.data[0].grandTotal
                               )}
                             </span>
                           </span>
@@ -718,15 +799,16 @@ export default function InvoiceDetails() {
                           </span>
                         </p>
                         <p className="text-base font-semibold text-gray-600">
-                          15% Tax Rate:{" "}
-                          <span>
-                            &#8358;
-                            {numberWithCommas(
-                              +invoiceData?.data?.data[0].product[0].price *
-                                0.15
-                            )}
-                          </span>
+                          VAT: <span>{numberWithCommas(+invoiceData?.data?.data[0].vat)}%</span>
                         </p>
+                        {invoiceData?.data?.data[0].trackTotal !== 0 && (
+                          <p className="text-base font-semibold text-gray-600">
+                            Balance &#8358;
+                            {numberWithCommas(
+                              +invoiceData?.data?.data[0].trackTotal
+                            )}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>

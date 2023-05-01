@@ -26,16 +26,18 @@ import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "react-query";
 import { AuthService } from "../services/api/auth";
 import { numberWithCommas } from "../utils";
+import { TransactionService } from "../services/api/transaction";
+import moment from "moment";
 
 const navigation = [
   { name: "Home", href: "/dashboard", icon: HomeIcon, current: true },
+  { name: "Income", href: "/invoice", icon: ScaleIcon, current: false },
   {
-    name: "Transactions",
+    name: "Expenses",
     href: "/transactions",
     icon: ClockIcon,
     current: false,
   },
-  { name: "Invoice", href: "/invoice", icon: ScaleIcon, current: false },
   { name: "Products", href: "/products", icon: CreditCardIcon, current: false },
   {
     name: "Categories",
@@ -101,7 +103,7 @@ export default function Dashboard() {
     { id: 1, name: "Account balance", value: data?.data?.data?.accountBalance },
     { id: 2, name: "Total Income", value: data?.data?.data?.totalIncome },
     { id: 3, name: "Total Expenses", value: data?.data?.data?.totalExpenses },
-    { id: 4, name: "Net Worth", value: data?.data?.data?.netWorth },
+    { id: 4, name: "Net Profit", value: data?.data?.data?.netProfit },
   ];
 
   const cards = [
@@ -130,6 +132,22 @@ export default function Dashboard() {
       amount: data?.data?.data?.netWorth,
     },
   ];
+
+  const {
+    isLoading: transactionIsLoading,
+    isError: transactionIsError,
+    error: transactionError,
+    data: transactionData,
+    isFetching: transactionIsFetching,
+  }: any = useQuery(
+    ["transaction-data"],
+    () => TransactionService.getTransactions(),
+    {
+      keepPreviousData: true,
+      refetchInterval: 2000,
+      refetchIntervalInBackground: true,
+    }
+  );
   console.log("NEW USER DATA", data?.data?.data);
   return (
     <>
@@ -162,7 +180,7 @@ export default function Dashboard() {
                 leaveFrom="translate-x-0"
                 leaveTo="-translate-x-full"
               >
-                <Dialog.Panel className="relative flex w-full max-w-xs flex-1 flex-col bg-cyan-700 pt-5 pb-4">
+                <Dialog.Panel className="relative flex w-full max-w-xs flex-1 flex-col bg-green-700 pt-5 pb-4">
                   <Transition.Child
                     as={Fragment}
                     enter="ease-in-out duration-300"
@@ -188,13 +206,13 @@ export default function Dashboard() {
                   </Transition.Child>
                   <div className="flex flex-shrink-0 items-center px-4">
                     <img
-                      className="h-8 w-auto"
-                      src="https://tailwindui.com/img/logos/mark.svg?color=cyan&shade=300"
+                      className="h-12 w-auto rounded-full"
+                      src="logo.png"
                       alt="Easywire logo"
                     />
                   </div>
                   <nav
-                    className="mt-5 h-full flex-shrink-0 divide-y divide-cyan-800 overflow-y-auto"
+                    className="mt-5 h-full flex-shrink-0 divide-y divide-green-800 overflow-y-auto"
                     aria-label="Sidebar"
                   >
                     <div className="space-y-1 px-2">
@@ -204,14 +222,14 @@ export default function Dashboard() {
                           to={item.href}
                           className={classNames(
                             item.current
-                              ? "bg-cyan-800 text-white"
-                              : "text-cyan-100 hover:bg-cyan-600 hover:text-white",
+                              ? "bg-green-800 text-white"
+                              : "text-green-100 hover:bg-green-600 hover:text-white",
                             "group flex items-center rounded-md px-2 py-2 text-base font-medium"
                           )}
                           aria-current={item.current ? "page" : undefined}
                         >
                           <item.icon
-                            className="mr-4 h-6 w-6 flex-shrink-0 text-cyan-200"
+                            className="mr-4 h-6 w-6 flex-shrink-0 text-green-200"
                             aria-hidden="true"
                           />
                           {item.name}
@@ -231,16 +249,16 @@ export default function Dashboard() {
         {/* Static sidebar for desktop */}
         <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
           {/* Sidebar component, swap this element with another sidebar if you like */}
-          <div className="flex flex-grow flex-col overflow-y-auto bg-cyan-700 pt-5 pb-4">
+          <div className="flex flex-grow flex-col overflow-y-auto bg-green-700 pt-5 pb-4">
             <div className="flex flex-shrink-0 items-center px-4">
               <img
-                className="h-8 w-auto"
-                src="https://tailwindui.com/img/logos/mark.svg?color=cyan&shade=300"
+                className="h-12 w-auto rounded-full"
+                src="logo.png"
                 alt="Easywire logo"
               />
             </div>
             <nav
-              className="mt-5 flex flex-1 flex-col divide-y divide-cyan-800 overflow-y-auto"
+              className="mt-5 flex flex-1 flex-col divide-y divide-green-800 overflow-y-auto"
               aria-label="Sidebar"
             >
               <div className="space-y-1 px-2">
@@ -250,14 +268,14 @@ export default function Dashboard() {
                     href={item.href}
                     className={classNames(
                       item.current
-                        ? "bg-cyan-800 text-white"
-                        : "text-cyan-100 hover:bg-cyan-600 hover:text-white",
+                        ? "bg-green-800 text-white"
+                        : "text-green-100 hover:bg-green-600 hover:text-white",
                       "group flex items-center rounded-md px-2 py-2 text-sm font-medium leading-6"
                     )}
                     aria-current={item.current ? "page" : undefined}
                   >
                     <item.icon
-                      className="mr-4 h-6 w-6 flex-shrink-0 text-cyan-200"
+                      className="mr-4 h-6 w-6 flex-shrink-0 text-green-200"
                       aria-hidden="true"
                     />
                     {item.name}
@@ -272,7 +290,7 @@ export default function Dashboard() {
           <div className="flex h-16 flex-shrink-0 border-b border-gray-200 bg-white lg:border-none">
             <button
               type="button"
-              className="border-r border-gray-200 px-4 text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-500 lg:hidden"
+              className="border-r border-gray-200 px-4 text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500 lg:hidden"
               onClick={() => setSidebarOpen(true)}
             >
               <span className="sr-only">Open sidebar</span>
@@ -288,7 +306,7 @@ export default function Dashboard() {
               <div className="ml-4 flex items-center md:ml-6">
                 <button
                   type="button"
-                  className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
+                  className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                 >
                   <span className="sr-only">View notifications</span>
                   <BellIcon className="h-6 w-6" aria-hidden="true" />
@@ -297,7 +315,7 @@ export default function Dashboard() {
                 {/* Profile dropdown */}
                 <Menu as="div" className="relative ml-3">
                   <div>
-                    <Menu.Button className="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 lg:rounded-md lg:p-2 lg:hover:bg-gray-50">
+                    <Menu.Button className="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 lg:rounded-md lg:p-2 lg:hover:bg-gray-50">
                       {data?.data?.data?.profilePhoto ? (
                         <img
                           className="h-8 w-8 rounded-full"
@@ -412,9 +430,11 @@ export default function Dashboard() {
                             </span>
                           )}
                           <h1 className="ml-3 text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:leading-9">
-                            Welcome back,{" "}
+                            Welcome,{" "}
                             <span className="font-thin">
-                              {data?.data?.data?.companyName ? data?.data?.data?.companyName : data?.data?.data?.firstname}
+                              {data?.data?.data?.companyName
+                                ? data?.data?.data?.companyName
+                                : data?.data?.data?.firstname}
                             </span>
                           </h1>
                         </div>
@@ -430,7 +450,7 @@ export default function Dashboard() {
                     </button>
                     <button
                       type="button"
-                      className="inline-flex items-center rounded-md bg-cyan-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"
+                      className="inline-flex items-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
                     >
                       Send money
                     </button>
@@ -497,177 +517,81 @@ export default function Dashboard() {
               </h2>
 
               {/* Activity list (smallest breakpoint only) */}
-              <div className="shadow sm:hidden">
-                <ul
-                  role="list"
-                  className="mt-2 divide-y divide-gray-200 overflow-hidden shadow sm:hidden"
-                >
-                  {transactions.map((transaction) => (
-                    <li key={transaction.id}>
-                      <a
-                        href={transaction.href}
-                        className="block bg-white px-4 py-4 hover:bg-gray-50"
+              <div className="min-w-full overflow-hidden overflow-x-auto align-middle shadow sm:rounded-lg">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead>
+                    <tr>
+                      <th
+                        className="bg-gray-50 px-6 py-3 text-left text-sm font-semibold text-gray-900"
+                        scope="col"
                       >
-                        <span className="flex items-center space-x-4">
-                          <span className="flex flex-1 space-x-2 truncate">
-                            <BanknotesIcon
-                              className="h-5 w-5 flex-shrink-0 text-gray-400"
-                              aria-hidden="true"
-                            />
-                            <span className="flex flex-col truncate text-sm text-gray-500">
-                              <span className="truncate">
-                                {transaction.name}
-                              </span>
-                              <span>
-                                <span className="font-medium text-gray-900">
-                                  {transaction.amount}
-                                </span>{" "}
-                                {transaction.currency}
-                              </span>
-                              <time dateTime={transaction.datetime}>
-                                {transaction.date}
-                              </time>
-                            </span>
+                        TRANSACTION
+                      </th>
+                      <th
+                        className="bg-gray-50 px-6 py-3 text-right text-sm font-semibold text-gray-900"
+                        scope="col"
+                      >
+                        AMOUNT
+                      </th>
+                      <th
+                        className="hidden bg-gray-50 px-6 py-3 text-left text-sm font-semibold text-gray-900 md:block"
+                        scope="col"
+                      >
+                        CATEGORY
+                      </th>
+                      <th
+                        className="bg-gray-50 px-6 py-3 text-right text-sm font-semibold text-gray-900"
+                        scope="col"
+                      >
+                        DATE
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 bg-white">
+                    {transactionData?.data?.data.map((transaction: any) => (
+                      <tr key={transaction._id} className="bg-white">
+                        <td className="w-full max-w-0 whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                          <div className="flex">
+                            <div className="group inline-flex space-x-2 truncate text-sm">
+                              <BanknotesIcon
+                                className="h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
+                                aria-hidden="true"
+                              />
+                              <p className="truncate text-gray-500 group-hover:text-gray-900">
+                                {transaction.description}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-500">
+                          <span className="font-medium text-gray-900">
+                            &#8358;
+                            {numberWithCommas(+transaction.amount)}{" "}
                           </span>
-                          <ChevronRightIcon
-                            className="h-5 w-5 flex-shrink-0 text-gray-400"
-                            aria-hidden="true"
-                          />
-                        </span>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-
-                <nav
-                  className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3"
-                  aria-label="Pagination"
-                >
-                  <div className="flex flex-1 justify-between">
-                    <a
-                      href="#"
-                      className="relative inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                    >
-                      Previous
-                    </a>
-                    <a
-                      href="#"
-                      className="relative ml-3 inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                    >
-                      Next
-                    </a>
-                  </div>
-                </nav>
-              </div>
-
-              {/* Activity table (small breakpoint and up) */}
-              <div className="hidden sm:block">
-                <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-                  <div className="mt-2 flex flex-col">
-                    <div className="min-w-full overflow-hidden overflow-x-auto align-middle shadow sm:rounded-lg">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead>
-                          <tr>
-                            <th
-                              className="bg-gray-50 px-6 py-3 text-left text-sm font-semibold text-gray-900"
-                              scope="col"
-                            >
-                              Transaction
-                            </th>
-                            <th
-                              className="bg-gray-50 px-6 py-3 text-right text-sm font-semibold text-gray-900"
-                              scope="col"
-                            >
-                              Amount
-                            </th>
-                            <th
-                              className="hidden bg-gray-50 px-6 py-3 text-left text-sm font-semibold text-gray-900 md:block"
-                              scope="col"
-                            >
-                              Status
-                            </th>
-                            <th
-                              className="bg-gray-50 px-6 py-3 text-right text-sm font-semibold text-gray-900"
-                              scope="col"
-                            >
-                              Date
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200 bg-white">
-                          {transactions.map((transaction) => (
-                            <tr key={transaction.id} className="bg-white">
-                              <td className="w-full max-w-0 whitespace-nowrap px-6 py-4 text-sm text-gray-900">
-                                <div className="flex">
-                                  <a
-                                    href={transaction.href}
-                                    className="group inline-flex space-x-2 truncate text-sm"
-                                  >
-                                    <BanknotesIcon
-                                      className="h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
-                                      aria-hidden="true"
-                                    />
-                                    <p className="truncate text-gray-500 group-hover:text-gray-900">
-                                      {transaction.name}
-                                    </p>
-                                  </a>
-                                </div>
-                              </td>
-                              <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-500">
-                                <span className="font-medium text-gray-900">
-                                  {transaction.amount}
-                                </span>
-                                {transaction.currency}
-                              </td>
-                              <td className="hidden whitespace-nowrap px-6 py-4 text-sm text-gray-500 md:block">
-                                <span
-                                  className={classNames(
-                                    statusStyles[transaction.status],
-                                    "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize"
-                                  )}
-                                >
-                                  {transaction.status}
-                                </span>
-                              </td>
-                              <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-500">
-                                <time dateTime={transaction.datetime}>
-                                  {transaction.date}
-                                </time>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                      {/* Pagination */}
-                      <nav
-                        className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6"
-                        aria-label="Pagination"
-                      >
-                        <div className="hidden sm:block">
-                          <p className="text-sm text-gray-700">
-                            Showing <span className="font-medium">1</span> to{" "}
-                            <span className="font-medium">10</span> of{" "}
-                            <span className="font-medium">20</span> results
-                          </p>
-                        </div>
-                        <div className="flex flex-1 justify-between gap-x-3 sm:justify-end">
-                          <a
-                            href="#"
-                            className="relative inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:ring-gray-400"
+                          NGN
+                        </td>
+                        <td className="hidden whitespace-nowrap px-6 py-4 text-sm text-gray-500 md:block">
+                          <span
+                            className={classNames(
+                              statusStyles[transaction.status],
+                              "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize"
+                            )}
                           >
-                            Previous
-                          </a>
-                          <a
-                            href="#"
-                            className="relative inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:ring-gray-400"
-                          >
-                            Next
-                          </a>
-                        </div>
-                      </nav>
-                    </div>
-                  </div>
-                </div>
+                            {transaction.category[0].category.toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-500">
+                          <time dateTime={transaction.createdAt}>
+                            {moment(
+                              new Date(transaction.createdAt),
+                              "YYYYMMDD"
+                            ).fromNow()}
+                          </time>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </main>

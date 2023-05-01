@@ -32,13 +32,13 @@ import type { RcFile, UploadFile, UploadProps } from "antd/es/upload/interface";
 
 const navigation = [
   { name: "Home", href: "/dashboard", icon: HomeIcon, current: false },
+  { name: "Income", href: "/invoice", icon: ScaleIcon, current: false },
   {
-    name: "Transactions",
+    name: "Expenses",
     href: "/transactions",
     icon: ClockIcon,
     current: false,
   },
-  { name: "Invoice", href: "/invoice", icon: ScaleIcon, current: false },
   { name: "Products", href: "/products", icon: CreditCardIcon, current: false },
   {
     name: "Categories",
@@ -99,10 +99,11 @@ export default function Profile() {
   const [lastName, setLastName]: any = useState("");
   const [companyName, setCompanyName] = useState("");
   const [about, setAbout] = useState("");
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [photoLoading, setPhotoLoading] = useState(false);
   const [file, setFile]: any = useState(null);
-  // const [inputLoading, setInputLoading] = useState(false)
+  console.log("PHOTO LOADING", photoLoading);
   const uploadSingleFile = async () => {
+    setPhotoLoading(true);
     const { files }: any = document.querySelector('input[type="file"]');
     const formData = new FormData();
     formData.append("file", files[0]);
@@ -117,8 +118,11 @@ export default function Profile() {
       options
     )
       .then((res) => res.json())
-      .then((res: any) => setFile(res.url))
-      .catch((err) => console.log(err));
+      .then((res: any) => {
+        setFile(res.url);
+        setPhotoLoading(false);
+      })
+      .catch((err: any) => console.log(err));
   };
   const navigate = useNavigate();
 
@@ -193,7 +197,7 @@ export default function Profile() {
     () => AuthService.getProfile(parsedData._id),
     {
       keepPreviousData: true,
-      refetchInterval: 1000,
+      refetchInterval: 2000,
       refetchIntervalInBackground: true,
     }
   );
@@ -229,7 +233,7 @@ export default function Profile() {
                 leaveFrom="translate-x-0"
                 leaveTo="-translate-x-full"
               >
-                <Dialog.Panel className="relative flex w-full max-w-xs flex-1 flex-col bg-cyan-700 pt-5 pb-4">
+                <Dialog.Panel className="relative flex w-full max-w-xs flex-1 flex-col bg-green-700 pt-5 pb-4">
                   <Transition.Child
                     as={Fragment}
                     enter="ease-in-out duration-300"
@@ -255,13 +259,13 @@ export default function Profile() {
                   </Transition.Child>
                   <div className="flex flex-shrink-0 items-center px-4">
                     <img
-                      className="h-8 w-auto"
-                      src="https://tailwindui.com/img/logos/mark.svg?color=cyan&shade=300"
+                      className="h-12 w-auto rounded-full"
+                      src="logo.png"
                       alt="Easywire logo"
                     />
                   </div>
                   <nav
-                    className="mt-5 h-full flex-shrink-0 divide-y divide-cyan-800 overflow-y-auto"
+                    className="mt-5 h-full flex-shrink-0 divide-y divide-green-800 overflow-y-auto"
                     aria-label="Sidebar"
                   >
                     <div className="space-y-1 px-2">
@@ -271,14 +275,14 @@ export default function Profile() {
                           to={item.href}
                           className={classNames(
                             item.current
-                              ? "bg-cyan-800 text-white"
-                              : "text-cyan-100 hover:bg-cyan-600 hover:text-white",
+                              ? "bg-green-800 text-white"
+                              : "text-green-100 hover:bg-green-600 hover:text-white",
                             "group flex items-center rounded-md px-2 py-2 text-base font-medium"
                           )}
                           aria-current={item.current ? "page" : undefined}
                         >
                           <item.icon
-                            className="mr-4 h-6 w-6 flex-shrink-0 text-cyan-200"
+                            className="mr-4 h-6 w-6 flex-shrink-0 text-green-200"
                             aria-hidden="true"
                           />
                           {item.name}
@@ -298,16 +302,16 @@ export default function Profile() {
         {/* Static sidebar for desktop */}
         <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
           {/* Sidebar component, swap this element with another sidebar if you like */}
-          <div className="flex flex-grow flex-col overflow-y-auto bg-cyan-700 pt-5 pb-4">
+          <div className="flex flex-grow flex-col overflow-y-auto bg-green-700 pt-5 pb-4">
             <div className="flex flex-shrink-0 items-center px-4">
               <img
-                className="h-8 w-auto"
-                src="https://tailwindui.com/img/logos/mark.svg?color=cyan&shade=300"
+                className="h-12 w-auto rounded-full"
+                src="logo.png"
                 alt="Easywire logo"
               />
             </div>
             <nav
-              className="mt-5 flex flex-1 flex-col divide-y divide-cyan-800 overflow-y-auto"
+              className="mt-5 flex flex-1 flex-col divide-y divide-green-800 overflow-y-auto"
               aria-label="Sidebar"
             >
               <div className="space-y-1 px-2">
@@ -317,14 +321,14 @@ export default function Profile() {
                     href={item.href}
                     className={classNames(
                       item.current
-                        ? "bg-cyan-800 text-white"
-                        : "text-cyan-100 hover:bg-cyan-600 hover:text-white",
+                        ? "bg-green-800 text-white"
+                        : "text-green-100 hover:bg-green-600 hover:text-white",
                       "group flex items-center rounded-md px-2 py-2 text-sm font-medium leading-6"
                     )}
                     aria-current={item.current ? "page" : undefined}
                   >
                     <item.icon
-                      className="mr-4 h-6 w-6 flex-shrink-0 text-cyan-200"
+                      className="mr-4 h-6 w-6 flex-shrink-0 text-green-200"
                       aria-hidden="true"
                     />
                     {item.name}
@@ -339,7 +343,7 @@ export default function Profile() {
           <div className="flex h-16 flex-shrink-0 border-b border-gray-200 bg-white lg:border-none">
             <button
               type="button"
-              className="border-r border-gray-200 px-4 text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-500 lg:hidden"
+              className="border-r border-gray-200 px-4 text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500 lg:hidden"
               onClick={() => setSidebarOpen(true)}
             >
               <span className="sr-only">Open sidebar</span>
@@ -355,7 +359,7 @@ export default function Profile() {
               <div className="ml-4 flex items-center md:ml-6">
                 <button
                   type="button"
-                  className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
+                  className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                 >
                   <span className="sr-only">View notifications</span>
                   <BellIcon className="h-6 w-6" aria-hidden="true" />
@@ -364,7 +368,7 @@ export default function Profile() {
                 {/* Profile dropdown */}
                 <Menu as="div" className="relative ml-3">
                   <div>
-                    <Menu.Button className="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 lg:rounded-md lg:p-2 lg:hover:bg-gray-50">
+                    <Menu.Button className="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 lg:rounded-md lg:p-2 lg:hover:bg-gray-50">
                       {data?.data?.data?.profilePhoto ? (
                         <img
                           className="h-8 w-8 rounded-full"
@@ -457,7 +461,7 @@ export default function Profile() {
                       <button
                         type="button"
                         onClick={() => setOpenFullName(true)}
-                        className="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        className="rounded-md bg-white font-medium text-green-600 hover:text-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                       >
                         Update
                       </button>
@@ -514,7 +518,7 @@ export default function Profile() {
                                       }
                                       value={firstName}
                                       autoComplete="firstname"
-                                      className="block w-full rounded-md border-0 py-1.5 mb-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 pl-2"
+                                      className="block w-full rounded-md border-0 py-1.5 mb-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm sm:leading-6 pl-2"
                                     />
                                   </div>
                                 </div>
@@ -536,7 +540,7 @@ export default function Profile() {
                                       }
                                       value={lastName}
                                       autoComplete="lastname"
-                                      className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 pl-2"
+                                      className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm sm:leading-6 pl-2"
                                     />
                                   </div>
                                 </div>
@@ -550,7 +554,7 @@ export default function Profile() {
                               ) : (
                                 <button
                                   type="button"
-                                  className="mt-3 inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                                  className="mt-3 inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
                                   onClick={handleUserUpdate}
                                   ref={cancelFullNameRef}
                                 >
@@ -584,7 +588,7 @@ export default function Profile() {
                       <button
                         type="button"
                         onClick={() => setOpenCompany(true)}
-                        className="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        className="rounded-md bg-white font-medium text-green-600 hover:text-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                       >
                         Update
                       </button>
@@ -641,7 +645,7 @@ export default function Profile() {
                                       }
                                       value={companyName}
                                       autoComplete="companyName"
-                                      className="block w-full rounded-md border-0 py-1.5 mb-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 pl-2"
+                                      className="block w-full rounded-md border-0 py-1.5 mb-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm sm:leading-6 pl-2"
                                     />
                                   </div>
                                 </div>
@@ -655,7 +659,7 @@ export default function Profile() {
                               ) : (
                                 <button
                                   type="button"
-                                  className="mt-3 inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                                  className="mt-3 inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
                                   onClick={handleCompanyUpdate}
                                   ref={cancelFullNameRef}
                                 >
@@ -697,7 +701,7 @@ export default function Profile() {
                       <button
                         type="button"
                         onClick={() => setOpenAbout(true)}
-                        className="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        className="rounded-md bg-white font-medium text-green-600 hover:text-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                       >
                         Update
                       </button>
@@ -719,7 +723,7 @@ export default function Profile() {
                       <button
                         type="button"
                         onClick={() => setOpenPhoto(true)}
-                        className="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        className="rounded-md bg-white font-medium text-green-600 hover:text-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                       >
                         Update
                       </button>
@@ -767,11 +771,17 @@ export default function Profile() {
                                     Profile Photo{" "}
                                   </label>
                                   <div className="mt-2">
-                                    <input
-                                      type="file"
-                                      className="form-control"
-                                      onChange={uploadSingleFile}
-                                    />
+                                    {photoLoading ? (
+                                      <div className="flex justify-center items-center ml-4">
+                                      <Spin />
+                                    </div>
+                                    ) : (
+                                      <input
+                                        type="file"
+                                        className="form-control"
+                                        onChange={uploadSingleFile}
+                                      />
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -784,7 +794,7 @@ export default function Profile() {
                               ) : (
                                 <button
                                   type="button"
-                                  className="mt-3 inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                                  className="mt-3 inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
                                   onClick={handlePhotoUpdate}
                                   ref={cancelFullNameRef}
                                 >
@@ -854,7 +864,7 @@ export default function Profile() {
                                       onChange={(e) => setAbout(e.target.value)}
                                       value={about}
                                       autoComplete="about"
-                                      className="block w-full rounded-md border-0 py-1.5 mb-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 pl-2"
+                                      className="block w-full rounded-md border-0 py-1.5 mb-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm sm:leading-6 pl-2"
                                     />
                                   </div>
                                 </div>
@@ -868,7 +878,7 @@ export default function Profile() {
                               ) : (
                                 <button
                                   type="button"
-                                  className="mt-3 inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                                  className="mt-3 inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
                                   onClick={handleAboutUpdate}
                                   ref={cancelFullNameRef}
                                 >

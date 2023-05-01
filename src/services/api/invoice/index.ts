@@ -16,10 +16,10 @@ export const InvoiceService = {
     }
     return response;
   },
-  verifyInvoice: async (invoiceId: any) => {
+  verifyInvoice: async (invoiceId: any, payload: any) => {
     let response;
     try {
-      response = await axios.post(`/invoice/verify/${invoiceId}`, {}, {
+      response = await axios.post(`/invoice/verify/${invoiceId}`, payload, {
         headers: {
           Authorization: `Bearer ${userDetails}`,
           "Content-Type": "application/json",
