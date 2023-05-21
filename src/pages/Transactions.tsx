@@ -158,7 +158,7 @@ export default function Transactions() {
     () => TransactionService.getTransactions(),
     {
       keepPreviousData: true,
-      refetchInterval: 2000,
+      // refetchInterval: 2000,
       refetchIntervalInBackground: true,
     }
   );
@@ -171,7 +171,7 @@ export default function Transactions() {
     isFetching: categoryIsFetching,
   }: any = useQuery(["category-data"], () => CategoryService.getCategories(), {
     keepPreviousData: true,
-    refetchInterval: 2000,
+    // refetchInterval: 2000,
     refetchIntervalInBackground: true,
   });
 

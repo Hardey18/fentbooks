@@ -18,6 +18,7 @@ export const TransactionService = {
   },
   getTransactions: async () => {
     let response;
+    console.log("TOKEN", userDetails);
     try {
       response = await axios.get(`/transaction/getAll`, {
         headers: {

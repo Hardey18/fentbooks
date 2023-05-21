@@ -182,7 +182,7 @@ export default function InvoiceDetails() {
     () => InvoiceService.getSingleInvoice(invoiceId),
     {
       keepPreviousData: true,
-      refetchInterval: 2000,
+      // refetchInterval: 2000,
       refetchIntervalInBackground: true,
     }
   );

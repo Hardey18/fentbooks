@@ -108,7 +108,7 @@ export default function Categories() {
     () => AuthService.getProfile(parsedData._id),
     {
       keepPreviousData: true,
-      refetchInterval: 2000,
+      // refetchInterval: 2000,
       refetchIntervalInBackground: true,
     }
   );
@@ -120,7 +120,7 @@ export default function Categories() {
     isFetching: categoryIsFetching,
   }: any = useQuery(["category-data"], () => CategoryService.getCategories(), {
     keepPreviousData: true,
-    refetchInterval: 2000,
+    // refetchInterval: 2000,
     refetchOnWindowFocus: "always",
     refetchIntervalInBackground: true,
   });

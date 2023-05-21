@@ -87,9 +87,9 @@ export default function Customers() {
     error: customerError,
     data: customerData,
     isFetching: customerIsFetching,
-  }: any = useQuery(["customer-data"], () => CustomerService.getCustomers(), {
+  }: any = useQuery(["all-customer"], () => CustomerService.getCustomers(), {
     keepPreviousData: true,
-    refetchInterval: 2000,
+    // refetchInterval: 2000,
     refetchIntervalInBackground: true,
   });
 
@@ -104,7 +104,7 @@ export default function Customers() {
     }).then((res: any) => {
       console.log("RESPONSE", res);
       if (res?.data?.status === "success") {
-        toast.success("Transaction created successfully!");
+        toast.success("Customer created successfully!");
         setOpen(false);
       } else {
         toast.error(res?.response?.data?.message);
@@ -655,8 +655,8 @@ export default function Customers() {
                               !formData.addressLine ||
                               !formData.city ||
                               !formData.state ||
-                              !formData.note ||
-                              !file
+                              !formData.note
+                              // !file
                             }
                             onClick={handleCustomerUpdate}
                           >

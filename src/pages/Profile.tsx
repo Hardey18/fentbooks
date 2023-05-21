@@ -178,6 +178,7 @@ export default function Profile() {
   const handlePhotoUpdate = (event: any) => {
     event.preventDefault();
     createPhotoUpdate(photoData).then((res: any) => {
+      console.log("RESPONSE", res);
       if (res?.data?.status === "success") {
         setOpenPhoto(false);
       }
@@ -197,7 +198,7 @@ export default function Profile() {
     () => AuthService.getProfile(parsedData._id),
     {
       keepPreviousData: true,
-      refetchInterval: 2000,
+      // refetchInterval: 2000,
       refetchIntervalInBackground: true,
     }
   );
