@@ -198,7 +198,7 @@ export default function Profile() {
     () => AuthService.getProfile(parsedData._id),
     {
       keepPreviousData: true,
-      // refetchInterval: 2000,
+      refetchInterval: 2000,
       refetchIntervalInBackground: true,
     }
   );

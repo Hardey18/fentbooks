@@ -136,7 +136,7 @@ export default function Invoice() {
     isFetching: invoiceIsFetching,
   }: any = useQuery(["invoice-data"], () => InvoiceService.getInvoice(), {
     keepPreviousData: true,
-    // refetchInterval: 2000,
+    refetchInterval: 2000,
     refetchIntervalInBackground: true,
   });
 
@@ -148,7 +148,7 @@ export default function Invoice() {
     isFetching: productIsFetching,
   }: any = useQuery(["product-data"], () => ProductService.getProducts(), {
     keepPreviousData: true,
-    // refetchInterval: 2000,
+    refetchInterval: 2000,
     refetchIntervalInBackground: true,
   });
 
@@ -160,7 +160,7 @@ export default function Invoice() {
     isFetching: customerIsFetching,
   }: any = useQuery(["customer-data"], () => CustomerService.getCustomers(), {
     keepPreviousData: true,
-    // refetchInterval: 2000,
+    refetchInterval: 2000,
     refetchIntervalInBackground: true,
   });
   const [categoryId, setCategoryId]: any = useState();
@@ -204,7 +204,7 @@ export default function Invoice() {
     isFetching: categoryIsFetching,
   }: any = useQuery(["category-data"], () => CategoryService.getCategories(), {
     keepPreviousData: true,
-    // refetchInterval: 2000,
+    refetchInterval: 2000,
     refetchIntervalInBackground: true,
   });
   const [file, setFile]: any = useState(null);

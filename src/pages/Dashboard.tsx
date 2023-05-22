@@ -144,7 +144,7 @@ export default function Dashboard() {
     () => TransactionService.getTransactions(),
     {
       keepPreviousData: true,
-      // refetchInterval: 2000,
+      refetchInterval: 2000,
       refetchIntervalInBackground: true,
     }
   );

@@ -89,7 +89,7 @@ export default function Customers() {
     isFetching: customerIsFetching,
   }: any = useQuery(["all-customer"], () => CustomerService.getCustomers(), {
     keepPreviousData: true,
-    // refetchInterval: 2000,
+    refetchInterval: 2000,
     refetchIntervalInBackground: true,
   });
 

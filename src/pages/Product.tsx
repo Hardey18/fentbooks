@@ -148,7 +148,7 @@ export default function Product() {
     isFetching: productIsFetching,
   }: any = useQuery(["product-data"], () => ProductService.getProducts(), {
     keepPreviousData: true,
-    // refetchInterval: 2000,
+    refetchInterval: 2000,
     refetchIntervalInBackground: true,
   });
 
@@ -160,7 +160,7 @@ export default function Product() {
     isFetching: categoryIsFetching,
   }: any = useQuery(["category-data"], () => CategoryService.getCategories(), {
     keepPreviousData: true,
-    // refetchInterval: 2000,
+    refetchInterval: 2000,
     refetchIntervalInBackground: true,
   });
 
